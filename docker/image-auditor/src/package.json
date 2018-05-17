@@ -1,0 +1,15 @@
+{
+  "name": "Auditor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Auditor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mathieu Jee",
+  "dependencies": {
+    "uuid": "3.2.1",
+	"moment": "2.22.1",
+	"dgram": "1.0.1"
+  }
+}
