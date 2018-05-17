@@ -6,15 +6,15 @@ var moment = require('moment');
 // UUID generator compliant with RFC4122
 const uuidv4 = require('uuid/v4'); 
 
-var activeMusicians = [];
+var activeMusicians = new Map();
 
 s.on('message', function(msg, source) {
 	var newMusician = JSON.parse(msg);
 	var musicianAlreadyExists = false;
 	
-	// update 'lastSound' of the new musician
-	activeMusicians.forEach(function(m) {
-		if(m.uuid == newMusician.uuid) {
+	// update 'lastSound' of the new musician	
+	activeMusicians.forEach(function(m, uuid, activeMusicians) {
+		if(uuid == newMusician.uuid) {
 			m.lastSound = moment();
 			musicianAlreadyExists = true;
 			
@@ -33,7 +33,7 @@ s.on('message', function(msg, source) {
 		m.activeSince = moment();
 		m.lastSound   = moment();
 
-		activeMusicians.push(m);
+		activeMusicians.set(m.uuid, m);
 		console.log("added the new musician.");
 	}
 
@@ -54,12 +54,13 @@ s.bind(2205, function() {
 
 // look for inactive musician every second
 setInterval(function() {
-	for(var i = 0; i < activeMusicians.length; i++) {
-		if(moment().diff(activeMusicians[i].lastSound) > 5000) {
-			activeMusicians.splice(i, 1);
+	
+	activeMusicians.forEach(function(m, uuid, activeMusicians) {
+		if(moment().diff(m.lastSound) > 5000) {
+			activeMusicians.delete(uuid);
 			console.log("Delete inactive musician.");
 		}
-	}
+	});
 
 }, 1000);
 
@@ -67,9 +68,10 @@ setInterval(function() {
 var serv = net.createServer(function(socket) {
 
 	var tmpMusicians = [];
-	activeMusicians.forEach(function(m) {
+
+	activeMusicians.forEach(function(m, uuid, activeMusicians) {
 		tmpMusicians.push({
-			"uuid": m.uuid,
+			"uuid": uuid,
 			"instrument": m.instrument,
 			"activeSince": m.activeSince
 		});
